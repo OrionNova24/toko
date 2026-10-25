@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NusaShop — Hal kecil, dampak besar</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter','Segoe UI',sans-serif}
+  :root{
+    --ink:#111827;--muted:#6b7280;--line:#e5e7eb;--bg:#ffffff;--soft:#f9fafb;
+    --accent:#111827;--accent2:#374151;--danger:#dc2626;--success:#059669;--info:#2563eb;
+  }
+  body{background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* NAV */
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;gap:20px;height:68px}
+  .brand{font-weight:800;font-size:1.3rem;letter-spacing:-.02em;cursor:pointer}
+  .brand span{color:#9ca3af;font-weight:500}
+  .nav-links{display:flex;gap:22px;font-size:.95rem;color:var(--muted)}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-actions{display:flex;gap:14px;align-items:center}
+  .icon-btn{position:relative;background:none;border:1px solid var(--line);border-radius:999px;padding:.45rem .7rem;cursor:pointer;font-size:1rem;transition:.2s}
+  .icon-btn:hover{background:var(--soft)}
+  .icon-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .badge{position:absolute;top:-6px;right:-6px;background:var(--ink);color:#fff;font-size:.65rem;padding:2px 6px;border-radius:999px;font-weight:700}
+
+  /* VIEWS */
+  .view{display:none}.view.active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* HERO */
+  .hero{padding:72px 0 56px;border-bottom:1px solid var(--line)}
+  .hero .kicker{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .hero h1{font-size:clamp(2rem,4.5vw,3.2rem);line-height:1.1;letter-spacing:-.03em;font-weight:800;max-width:780px}
+  .hero p{color:var(--muted);max-width:620px;margin-top:18px;font-size:1.05rem}
+  .hero-actions{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:.75rem 1.4rem;border-radius:999px;font-weight:600;font-size:.95rem;cursor:pointer;border:1px solid transparent;transition:.2s}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{background:#000}
+  .btn-line{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-line:hover{background:var(--soft)}
+  .promo{margin-top:26px;display:inline-flex;gap:10px;align-items:center;font-size:.9rem;background:var(--soft);border:1px dashed var(--line);padding:.6rem 1rem;border-radius:999px;color:var(--muted)}
+  .promo strong{color:var(--ink)}
+
+  /* TRUST BAR */
+  .trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;padding:26px 0;border-bottom:1px solid var(--line)}
+  .trust-item{font-size:.9rem;color:var(--muted)}
+  .trust-item strong{display:block;color:var(--ink);font-size:.95rem;margin-bottom:2px}
+
+  /* SECTION */
+  .section{padding:56px 0}
+  .section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+  .section-head h2{font-size:clamp(1.4rem,2.5vw,1.9rem);letter-spacing:-.02em}
+  .section-head p{color:var(--muted);font-size:.95rem}
+  .link-arrow{color:var(--muted);font-size:.9rem;font-weight:600}
+  .link-arrow:hover{color:var(--ink)}
+
+  /* CATEGORY CHIPS */
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{padding:.55rem 1rem;border:1px solid var(--line);border-radius:999px;font-size:.9rem;color:var(--muted);cursor:pointer;background:#fff;transition:.2s}
+  .chip:hover,.chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* PRODUCT GRID */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:22px}
+  .card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;transition:.25s;cursor:pointer;display:flex;flex-direction:column}
+  .card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.08);border-color:#d1d5db}
+  .thumb{height:180px;display:flex;align-items:center;justify-content:center;font-size:3.6rem;background:linear-gradient(135deg,#f5f6f8,#eceef2);position:relative}
+  .thumb .badge-prod{position:absolute;top:10px;left:10px;background:#fff;border:1px solid var(--line);color:var(--ink);font-size:.7rem;font-weight:700;padding:.25rem .6rem;border-radius:999px}
+  .thumb .badge-prod.hemat{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+  .thumb .badge-prod.baru{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .cat{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .name{font-weight:700;font-size:1rem;letter-spacing:-.01em}
+  .price{font-weight:800;font-size:1.05rem;margin-top:2px}
+  .price .old{font-weight:500;color:var(--muted);text-decoration:line-through;font-size:.85rem;margin-left:6px}
+  .ship{font-size:.78rem;color:var(--muted);margin-top:4px}
+  .card .btn{margin-top:12px;justify-content:center;width:100%}
+
+  /* BANNER */
+  .banner{background:var(--soft);border:1px solid var(--line);border-radius:22px;padding:36px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+  .banner h2{font-size:1.6rem;letter-spacing:-.02em;margin-bottom:10px}
+  .banner p{color:var(--muted)}
+  .banner .emoji{font-size:5rem;text-align:center}
+  @media(max-width:720px){.banner{grid-template-columns:1fr}.banner .emoji{display:none}}
+
+  /* BLOG */
+  .blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+  .blog-card{border:1px solid var(--line);border-radius:16px;padding:20px;background:#fff;transition:.2s}
+  .blog-card:hover{border-color:#d1d5db;box-shadow:0 10px 24px rgba(0,0,0,.06)}
+  .blog-card .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .blog-card h3{font-size:1.05rem;margin:8px 0}
+  .blog-card p{font-size:.9rem;color:var(--muted)}
+
+  /* FINANCE DASHBOARD (tetap ada, diselaraskan) */
+  .fin-head{background:var(--ink);color:#fff;border-radius:22px;padding:32px;margin-bottom:24px}
+  .fin-head h2{font-size:1.5rem;margin-bottom:6px}
+  .fin-head p{color:#d1d5db;font-size:.95rem;margin-bottom:22px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px}
+  .stat .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:#d1d5db;margin-bottom:6px}
+  .stat .value{font-size:1.35rem;font-weight:800;word-break:break-word}
+  .stat .sub{font-size:.78rem;color:#9ca3af;margin-top:4px}
+  .progress{margin-top:18px}
+  .progress .row{display:flex;justify-content:space-between;font-size:.82rem;color:#d1d5db;margin-bottom:6px}
+  .bar{height:10px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden}
+  .bar>span{display:block;height:100%;width:0;background:#fff;border-radius:999px;transition:width .6s}
+  .bar>span.over{background:#f87171}
+
+  .panel{border:1px solid var(--line);border-radius:16px;padding:20px;background:#fff;margin-bottom:20px}
+  .panel h3{font-size:1.05rem;margin-bottom:14px}
+  .row-form{display:grid;grid-template-columns:1.2fr .8fr .9fr auto;gap:10px;align-items:end}
+  .field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px;font-weight:600}
+  .field input,.field select{width:100%;padding:.65rem .8rem;border:1px solid var(--line);border-radius:10px;font-size:.92rem;outline:none;background:#fff}
+  .field input:focus,.field select:focus{border-color:var(--ink)}
+  .btn-sm{padding:.6rem 1rem;font-size:.85rem}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-danger:hover{background:#b91c1c}
+  .btn-gray{background:var(--soft);border:1px solid var(--line);color:var(--ink)}
+  .btn-gray:hover{background:#f3f4f6}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:10px 8px;border-bottom:1px solid var(--line)}
+  td{padding:12px 8px;border-bottom:1px solid #f3f4f6;font-size:.88rem}
+  tr:hover td{background:var(--soft)}
+  .tag-cat{display:inline-block;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:600;background:#f3f4f6;color:#374151}
+  .amount{font-weight:800;color:var(--danger);text-align:right}
+  .del{background:none;border:none;cursor:pointer;font-size:1rem;color:var(--danger);padding:.2rem .4rem;border-radius:6px}
+  .del:hover{background:#fee2e2}
+  .empty{text-align:center;color:var(--muted);padding:34px 10px}
+  .empty .e{font-size:2.4rem;display:block;margin-bottom:6px}
+
+  /* BREAKDOWN */
+  .bd{display:flex;flex-direction:column;gap:14px}
+  .bd-item{display:flex;gap:12px;align-items:center}
+  .bd-emoji{width:36px;text-align:center;font-size:1.4rem}
+  .bd-main{flex:1}
+  .bd-top{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px}
+  .bd-bar{height:8px;background:#f3f4f6;border-radius:999px;overflow:hidden}
+  .bd-bar>span{display:block;height:100%;border-radius:999px;background:var(--ink);transition:width .6s}
+
+  /* FOOTER */
+  .footer{border-top:1px solid var(--line);background:var(--soft);padding:44px 0 22px;margin-top:48px;color:var(--muted)}
+  .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:28px}
+  .footer h4{color:var(--ink);font-size:.9rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em}
+  .footer a{display:block;font-size:.88rem;margin-bottom:6px;color:var(--muted)}
+  .footer a:hover{color:var(--ink)}
+  .footer-bottom{border-top:1px solid var(--line);margin-top:30px;padding-top:16px;text-align:center;font-size:.82rem}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:.85rem 1.2rem;border-radius:12px;font-weight:600;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.2);transform:translateX(400px);transition:.35s;z-index:99;max-width:90vw}
+  .toast.show{transform:translateX(0)}
+  .toast.danger{background:var(--danger)}
+  .toast.info{background:var(--info)}
+
+  /* ===== AUTH: USER CHIP ===== */
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--soft);border:1px solid var(--line);padding:.35rem .7rem .35rem .35rem;border-radius:999px;cursor:pointer;transition:.2s;font-size:.88rem}
+.user-chip:hover{background:#f3f4f6}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem}
+.user-chip .name{font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-chip .caret{color:var(--muted);font-size:.7rem}
+
+/* ===== AUTH: DROPDOWN ===== */
+.dropdown{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.1);min-width:220px;padding:6px;display:none;z-index:60;overflow:hidden}
+.menu.show{display:block;animation:fade .2s}
+.menu .menu-head{padding:12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.menu .menu-head .n{font-weight:700}
+.menu .menu-head .e{font-size:.78rem;color:var(--muted)}
+.menu a,.menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:.55rem .8rem;border-radius:8px;font-size:.9rem;background:none;border:none;cursor:pointer;color:var(--ink)}
+.menu a:hover,.menu button:hover{background:var(--soft)}
+.menu button.danger{color:var(--danger)}
+.menu button.danger:hover{background:#fee2e2}
+
+/* ===== AUTH: LOGIN VIEW ===== */
+.login-wrap{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.login-box{width:100%;max-width:420px;border:1px solid var(--line);border-radius:20px;padding:32px;background:#fff;box-shadow:0 20px 40px rgba(0,0,0,.05)}
+.login-box h2{font-size:1.5rem;letter-spacing:-.02em;margin-bottom:6px}
+.login-box p.sub{color:var(--muted);font-size:.9rem;margin-bottom:24px}
+.tabs{display:flex;gap:6px;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:22px}
+.tabs button{flex:1;padding:.55rem;border:none;background:none;border-radius:999px;cursor:pointer;font-weight:600;font-size:.9rem;color:var(--muted);transition:.2s}
+.tabs button.active{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:5px;font-weight:600}
+.field input{width:100%;padding:.75rem .9rem;border:1px solid var(--line);border-radius:10px;font-size:.95rem;outline:none;background:#fff;transition:.2s}
+.field input:focus{border-color:var(--ink)}
+.field .err{color:var(--danger);font-size:.78rem;margin-top:4px;display:none}
+.field.invalid input{border-color:var(--danger)}
+.field.invalid .err{display:block}
+.btn-full{width:100%;justify-content:center;padding:.85rem;margin-top:6px}
+.hint{margin-top:18px;padding:12px;background:var(--soft);border:1px dashed var(--line);border-radius:10px;font-size:.8rem;color:var(--muted);line-height:1.5}
+.hint strong{color:var(--ink)}
+
+/* ===== AUTH: MODAL ===== */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-mask.show{display:flex;animation:fade .2s}
+.modal{background:#fff;border-radius:18px;padding:26px;max-width:400px;width:100%;text-align:center}
+.modal h3{font-size:1.15rem;margin-bottom:8px}
+.modal p{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px}
+.modal-actions .btn{flex:1;justify-content:center}
+
+  @media(max-width:768px){
+    .nav-links{display:none}
+    .row-form{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container nav-in">
+    <div class="brand" onclick="switchView('shop')">Nusa<span>Shop</span></div>
+    <div class="nav-links">
+      <a href="#" onclick="switchView('shop');return false">Produk</a>
+      <a href="#" onclick="switchView('shop');return false">Baru</a>
+      <a href="#" onclick="switchView('shop');return false">Inspirasi</a>
+    </div>
+    <div class="nav-actions">
+      <button class="icon-btn active" id="iconShop" onclick="switchView('shop')" title="Belanja">🏠</button>
+      <button class="icon-btn" id="iconFinance" onclick="requireLogin('finance')" title="Keuangan">💰</button>
+      <button class="icon-btn" title="Keranjang">🛒<span class="badge" id="cartBadge">0</span></button>
+      <div id="userArea"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- VIEW LOGIN -->
+<div id="viewLogin" class="view">
+  <div class="login-wrap">
+    <div class="login-box">
+      <h2 id="loginTitle">Masuk ke NusaShop</h2>
+      <p class="sub" id="loginSub">Belanja & kelola keuanganmu dalam satu akun.</p>
+
+      <div class="tabs">
+        <button class="active" id="tabLogin" onclick="switchAuthTab('login')">Masuk</button>
+        <button id="tabRegister" onclick="switchAuthTab('register')">Daftar</button>
+      </div>
+
+      <div class="field" id="fieldName" style="display:none">
+        <label>Nama lengkap</label>
+        <input type="text" id="inputName" placeholder="contoh: Budi Santoso" autocomplete="name">
+        <div class="err">Nama minimal 2 karakter</div>
+      </div>
+
+      <div class="field" id="fieldEmail">
+        <label>Email</label>
+        <input type="email" id="inputEmail" placeholder="nama@email.com" autocomplete="email">
+        <div class="err">Masukkan email yang valid</div>
+      </div>
+
+      <div class="field" id="fieldPass">
+        <label>Password</label>
+        <input type="password" id="inputPass" placeholder="Min. 4 karakter" autocomplete="current-password">
+        <div class="err">Password minimal 4 karakter</div>
+      </div>
+
+      <button class="btn btn-dark btn-full" id="btnSubmit" onclick="submitAuth()">Masuk</button>
+
+      <div class="hint">
+        <strong>🎮 Mode Demo:</strong> Daftar dengan email & password apa saja (min. 4 karakter). Data akun disimpan di browser (localStorage). Tidak ada server, tidak ada Google.
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="kicker">Pilihan untuk keseharian</div>
+      <h1>Hal kecil, dampak besar untuk harimu.</h1>
+      <p>Dari sudut kerja sampai waktu santai. Temukan pilihan fungsional dengan desain yang kamu suka.</p>
+      <div class="hero-actions">
+        <button class="btn btn-dark" onclick="document.querySelector('#produk').scrollIntoView({behavior:'smooth'})">Mulai belanja</button>
+        <button class="btn btn-line" onclick="requireLogin('finance')">Buka keuangan</button>
+      </div>
+      <div class="promo">🎁 <strong>Diskon Rp100.000</strong> · Min. belanja Rp1.000.000 · Kode <strong>NUSA100</strong></div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <div class="container">
+    <div class="trust">
+      <div class="trust-item"><strong>Pilihan pengiriman</strong>Estimasi jelas sebelum checkout</div>
+      <div class="trust-item"><strong>Pengembalian mudah</strong>Ajukan sesuai kebijakan toko</div>
+      <div class="trust-item"><strong>Bantuan saat dibutuhkan</strong>Senin–Sabtu, 09.00–18.00 WIB</div>
+      <div class="trust-item"><strong>Pembayaran fleksibel</strong>Bank, e-wallet, dan kartu</div>
+    </div>
+  </div>
+
+  <!-- KATEGORI -->
+  <section class="section container">
+    <div class="section-head"><h2>Mulai dari yang kamu butuhkan</h2></div>
+    <div class="chips">
+      <button class="chip active">Semua</button>
+      <button class="chip">Audio & Kerja</button>
+      <button class="chip">Ruang</button>
+      <button class="chip">Gaya Hidup</button>
+      <button class="chip">Tas</button>
+    </div>
+  </section>
+
+  <!-- PRODUK -->
+  <section class="section container" id="produk" style="padding-top:0">
+    <div class="section-head">
+      <div><h2>Harga pas, pilihan tepat</h2><p>Promo 5–11 Oktober</p></div>
+    </div>
+    <div class="grid" id="productGrid"></div>
+  </section>
+
+  <!-- BANNER -->
+  <section class="container">
+    <div class="banner">
+      <div>
+        <h2>Bukan sekadar barang. Bagian dari keseharian.</h2>
+        <p>Kami mengkurasi barang yang menggabungkan fungsi, kenyamanan, dan karakter. Mulai dari kebutuhan yang benar-benar kamu pakai.</p>
+        <div style="margin-top:16px"><button class="btn btn-dark">Kenali NusaShop</button></div>
+      </div>
+      <div class="emoji">✨</div>
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  <section class="section container">
+    <div class="section-head"><h2>Sedikit inspirasi sebelum memilih</h2></div>
+    <div class="blog-grid">
+      <div class="blog-card"><div class="tag">Audio & Kerja</div><h3>Headphone untuk fokus</h3><p>Kenali ANC, daya tahan baterai, dan kenyamanan sebelum membeli perangkat andalanmu.</p><div style="margin-top:10px" class="link-arrow">Baca panduan →</div></div>
+      <div class="blog-card"><div class="tag">Inspirasi Ruang</div><h3>Meja kecil, ide besar</h3><p>Tiga cara membuat sudut kerja lebih nyaman tanpa banyak barang berantakan.</p><div style="margin-top:10px" class="link-arrow">Baca panduan →</div></div>
+      <div class="blog-card"><div class="tag">Gaya Hidup</div><h3>Isi tas harianmu</h3><p>Pilihan ringan dan fungsional untuk rutinitas di luar rumah yang tetap rapi dan siap.</p><div style="margin-top:10px" class="link-arrow">Baca panduan →</div></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- VIEW FINANCE -->
+<div id="viewFinance" class="view">
+  <div class="section container">
+
+    <div class="fin-head">
+      <h2>Keuangan saya</h2>
+      <p>Pantau pengeluaran & kelola budget dengan bijak.</p>
+      <div class="stats">
+        <div class="stat"><div class="label">Total pengeluaran</div><div class="value" id="statTotal">Rp 0</div><div class="sub" id="statCount">0 transaksi</div></div>
+        <div class="stat"><div class="label">Budget bulanan</div><div class="value" id="statBudget">Belum diatur</div><div class="sub" id="statRemaining">-</div></div>
+        <div class="stat"><div class="label">Rata-rata / transaksi</div><div class="value" id="statAvg">Rp 0</div><div class="sub">per pembelian</div></div>
+        <div class="stat"><div class="label">Terbesar</div><div class="value" id="statMax">Rp 0</div><div class="sub" id="statMaxName">-</div></div>
+      </div>
+      <div class="progress" id="progressWrap" style="display:none">
+        <div class="row"><span>Penggunaan budget</span><span id="progressPct">0%</span></div>
+        <div class="bar"><span id="progressFill"></span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Atur budget bulanan</h3>
+      <div class="row-form" style="grid-template-columns:1fr auto auto">
+        <div class="field"><label>Jumlah budget (Rp)</label><input type="number" id="inputBudget" placeholder="contoh: 2000000" min="0"></div>
+        <button class="btn btn-dark btn-sm" onclick="setBudget()">Simpan</button>
+        <button class="btn btn-gray btn-sm" onclick="resetBudget()">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Catat pengeluaran manual</h3>
+      <div class="row-form">
+        <div class="field"><label>Keterangan</label><input type="text" id="inputDesc" placeholder="contoh: Makan siang"></div>
+        <div class="field"><label>Jumlah (Rp)</label><input type="number" id="inputAmount" placeholder="50000" min="0"></div>
+        <div class="field"><label>Kategori</label>
+          <select id="inputCategory">
+            <option value="elektronik">📱 Elektronik</option>
+            <option value="fashion">👕 Fashion</option>
+            <option value="rumah">🏠 Rumah Tangga</option>
+            <option value="kecantikan">💄 Kecantikan</option>
+            <option value="olahraga">⚽ Olahraga</option>
+            <option value="buku">📚 Buku</option>
+            <option value="lainnya">📦 Lainnya</option>
+          </select>
+        </div>
+        <button class="btn btn-dark btn-sm" onclick="addManualTransaction()">Tambah</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Pengeluaran per kategori</h3>
+      <div class="bd" id="breakdown"><div class="empty"><span class="e">📭</span>Belum ada data</div></div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">Riwayat transaksi</h3>
+        <button class="btn btn-danger btn-sm" onclick="clearHistory()">Hapus semua</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th style="text-align:right">Jumlah</th><th></th></tr></thead>
+          <tbody id="txBody"><tr><td colspan="5"><div class="empty"><span class="e">📭</span>Belum ada transaksi</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div><h4>NusaShop</h4><p style="font-size:.88rem">Pilihan fungsional untuk keseharian, dengan sentuhan desain yang kamu suka.</p></div>
+      <div><h4>Layanan</h4><a href="#">Bantuan</a><a href="#">Cara belanja</a><a href="#">Pengiriman</a></div>
+      <div><h4>Perusahaan</h4><a href="#">Tentang</a><a href="#">Karier</a><a href="#">Blog</a></div>
+      <div><h4>Ikuti</h4><a href="#">Instagram</a><a href="#">TikTok</a><a href="#">YouTube</a></div>
+    </div>
+    <div class="footer-bottom">© 2025 NusaShop. Semua hak dilindungi.</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Berhasil!</div>
+
+<script>
+/* ================= DATA ================= */
+const products = [
+  {id:1,name:'NusaSound Air ANC',emoji:'🎧',price:899000,oldPrice:1099000,cat:'Audio & Kerja',category:'elektronik',badge:'Hemat 18%',badgeType:'hemat'},
+  {id:2,name:'KeySpace K75',emoji:'⌨️',price:549000,oldPrice:649000,cat:'Audio & Kerja',category:'elektronik',badge:'Baru',badgeType:'baru'},
+  {id:3,name:'Luma Desk Mini',emoji:'💡',price:299000,oldPrice:0,cat:'Ruang',category:'rumah',badge:'Baru',badgeType:'baru'},
+  {id:4,name:'Daily Flask 600 ml',emoji:'🥤',price:149000,oldPrice:189000,cat:'Gaya Hidup',category:'lainnya',badge:'Hemat 21%',badgeType:'hemat'},
+  {id:5,name:'Urban Daypack 18L',emoji:'🎒',price:329000,oldPrice:399000,cat:'Tas',category:'fashion',badge:'Pilihan editor',badgeType:''},
+  {id:6,name:'NusaBeat Pocket',emoji:'🔊',price:249000,oldPrice:299000,cat:'Audio & Kerja',category:'elektronik',badge:'Hemat 17%',badgeType:'hemat'}
+];
+
+const catMeta = {
+  elektronik:{emoji:'📱',label:'Elektronik'},fashion:{emoji:'👕',label:'Fashion'},
+  rumah:{emoji:'🏠',label:'Rumah Tangga'},kecantikan:{emoji:'💄',label:'Kecantikan'},
+  olahraga:{emoji:'⚽',label:'Olahraga'},buku:{emoji:'📚',label:'Buku'},lainnya:{emoji:'📦',label:'Lainnya'}
+};
+
+/* ================= STATE ================= */
+let cartCount = 0;
+let transactions = JSON.parse(localStorage.getItem('nusashop_transactions')||'[]');
+let budget = Number(localStorage.getItem('nusashop_budget')||0);
+
+/* ================= HELPERS ================= */
+const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+const fdate = iso => new Date(iso).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const save = () => {
+  localStorage.setItem('nusashop_transactions',JSON.stringify(transactions));
+  localStorage.setItem('nusashop_budget',String(budget));
+};
+
+/* ================= VIEW ================= */
+const switchView = v => {
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.icon-btn').forEach(x=>x.classList.remove('active'));
+  if(v==='finance'){
+    document.getElementById('viewFinance').classList.add('active');
+    document.getElementById('iconFinance').classList.add('active');
+    renderFinance();
+  }else{
+    document.getElementById('viewShop').classList.add('active');
+    document.getElementById('iconShop').classList.add('active');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+/* ================= TOAST ================= */
+let tTimer;
+const toast = (msg,type='') => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+type;
+  clearTimeout(tTimer);
+  tTimer = setTimeout(()=>t.classList.remove('show'),2400);
+};
+
+/* ================= RENDER PRODUK ================= */
+const renderProducts = () => {
+  document.getElementById('productGrid').innerHTML = products.map(p=>`
+    <div class="card">
+      <div class="thumb">
+        <span class="badge-prod ${p.badgeType}">${p.badge}</span>${p.emoji}
+      </div>
+      <div class="card-body">
+        <div class="cat">${p.cat}</div>
+        <div class="name">${p.name}</div>
+        <div class="price">${rp(p.price)}${p.oldPrice?`<span class="old">${rp(p.oldPrice)}</span>`:''}</div>
+        <div class="ship">Jakarta · Dikirim dari NusaShop</div>
+        <button class="btn btn-dark btn-sm" onclick="buyProduct(${p.id})">Beli sekarang</button>
+      </div>
+    </div>
+  `).join('');
+};
+
+/* ================= BELI ================= */
+const buyProduct = id => {
+  const p = products.find(x=>x.id===id);
+  if(!p)return;
+  cartCount++;
+  document.getElementById('cartBadge').textContent = cartCount;
+  transactions.unshift({
+    id: Date.now()+Math.random(),
+    date: new Date().toISOString(),
+    description: p.name,
+    category: p.category,
+    amount: p.price,
+    source:'shop'
+  });
+  save();
+  toast(`"${p.name}" dibeli & tercatat!`);
+};
+
+/* ================= BUDGET ================= */
+const setBudget = () => {
+  const v = Number(document.getElementById('inputBudget').value);
+  if(!v||v<=0)return toast('Masukkan budget yang valid','danger');
+  budget = v; save();
+  document.getElementById('inputBudget').value = '';
+  renderFinance(); toast('Budget disimpan!');
+};
+const resetBudget = () => {
+  budget = 0; save(); renderFinance(); toast('Budget direset','info');
+};
+
+/* ================= TRANSAKSI MANUAL ================= */
+const addManualTransaction = () => {
+  const d = document.getElementById('inputDesc').value.trim();
+  const a = Number(document.getElementById('inputAmount').value);
+  const c = document.getElementById('inputCategory').value;
+  if(!d)return toast('Keterangan wajib diisi','danger');
+  if(!a||a<=0)return toast('Jumlah harus > 0','danger');
+  transactions.unshift({id:Date.now()+Math.random(),date:new Date().toISOString(),description:d,category:c,amount:a,source:'manual'});
+  save();
+  document.getElementById('inputDesc').value='';
+  document.getElementById('inputAmount').value='';
+  renderFinance(); toast('Pengeluaran dicatat!');
+};
+
+/* ================= HAPUS ================= */
+const deleteTransaction = id => {
+  transactions = transactions.filter(t=>t.id!==id);
+  save(); renderFinance(); toast('Transaksi dihapus','info');
+};
+const clearHistory = () => {
+  if(!transactions.length)return toast('Tidak ada transaksi','info');
+  if(!confirm('Hapus semua riwayat? Budget tetap tersimpan.'))return;
+  transactions=[]; save(); renderFinance(); toast('Riwayat dihapus','info');
+};
+
+/* ================= RENDER FINANCE ================= */
+const renderFinance = () => {
+  const total = transactions.reduce((s,t) => s + t.amount, 0);
+  const count = transactions.length;
+  const avg = count ? total / count : 0;
+  const maxTx = transactions.reduce((m,t) => t.amount > (m?.amount || 0) ? t : m, null);
+
+  // Stats
+  document.getElementById('statTotal').textContent = rp(total);
+  document.getElementById('statCount').textContent = count + ' transaksi';
+  document.getElementById('statAvg').textContent = rp(Math.round(avg));
+  document.getElementById('statMax').textContent = rp(maxTx?.amount || 0);
+  document.getElementById('statMaxName').textContent = maxTx?.description || '-';
+
+   // Budget
+  const statBudget = document.getElementById('statBudget');
+  const statRemaining = document.getElementById('statRemaining');
+  const progressWrap = document.getElementById('progressWrap');
+
+  if(budget > 0){
+    statBudget.textContent = rp(budget);
+    const remaining = budget - total;
+    statRemaining.textContent = remaining >= 0
+      ? 'Sisa: ' + rp(remaining)
+      : 'Over: ' + rp(Math.abs(remaining));
+    statRemaining.style.color = remaining >= 0 ? '#9ca3af' : '#fca5a5';
+
+    progressWrap.style.display = 'block';
+    const pct = Math.min(100, (total / budget) * 100);
+    const fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.classList.toggle('over', total > budget);
+    document.getElementById('progressPct').textContent = Math.round(pct) + '%';
+  } else {
+    statBudget.textContent = 'Belum diatur';
+    statRemaining.textContent = '-';
+    statRemaining.style.color = '#9ca3af';
+    progressWrap.style.display = 'none';
+  }
+
+  // Breakdown per kategori
+  const bd = document.getElementById('breakdown');
+  if(!transactions.length){
+    bd.innerHTML = '<div class="empty"><span class="e">📭</span>Belum ada data</div>';
+  } else {
+    const byCat = {};
+    transactions.forEach(t => {
+      byCat[t.category] = (byCat[t.category] || 0) + t.amount;
+    });
+    const maxCat = Math.max(...Object.values(byCat));
+    bd.innerHTML = Object.entries(byCat)
+      .sort((a,b) => b[1] - a[1])
+      .map(([cat, amt]) => {
+        const meta = catMeta[cat] || catMeta.lainnya;
+        const pct = (amt / total * 100).toFixed(1);
+        return `
+          <div class="bd-item">
+            <div class="bd-emoji">${meta.emoji}</div>
+            <div class="bd-main">
+              <div class="bd-top"><strong>${meta.label}</strong><span>${rp(amt)} (${pct}%)</span></div>
+              <div class="bd-bar"><span style="width:${(amt/maxCat)*100}%"></span></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+  }
+
+  // Tabel transaksi
+  const body = document.getElementById('txBody');
+  if(!transactions.length){
+    body.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="e">📭</span>Belum ada transaksi</div></td></tr>';
+  } else {
+    body.innerHTML = transactions.map(t => {
+      const meta = catMeta[t.category] || catMeta.lainnya;
+      return `
+        <tr>
+          <td>${fdate(t.date)}</td>
+          <td>${esc(t.description)}${t.source === 'shop' ? ' 🛍️' : ''}</td>
+          <td><span class="tag-cat">${meta.emoji} ${meta.label}</span></td>
+          <td class="amount">-${rp(t.amount)}</td>
+          <td style="text-align:center">
+            <button class="del" onclick="deleteTransaction(${t.id})" title="Hapus">🗑️</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+};
+
+/* ================= INIT ================= */
+renderProducts();
+document.getElementById('inputBudget').value = budget || '';
+renderFinance();
+
+<!-- MODAL LOGOUT -->
+<div class="modal-mask" id="logoutModal">
+  <div class="modal">
+    <h3>Keluar dari akun?</h3>
+    <p>Riwayat keuanganmu tetap tersimpan di browser ini.</p>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal()">Batal</button>
+      <button class="btn btn-dark" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+</div>
+
+/* ================= AUTH (DEMO) ================= */
+// Data user disimpan: localStorage 'nusashop_user' = {name, email}
+// Password TIDAK disimpan (cuma demo). Untuk demo sederhana, kita anggap user bisa daftar lalu langsung login.
+
+let currentUser = JSON.parse(localStorage.getItem('nusashop_user') || 'null');
+let authMode = 'login'; // 'login' atau 'register'
+
+/* --- Render user area di navbar --- */
+const renderUserArea = () => {
+  const area = document.getElementById('userArea');
+  if (!area) return;
+
+  if (currentUser) {
+    const initials = (currentUser.name || currentUser.email || '?').trim().charAt(0).toUpperCase();
+    area.innerHTML = `
+      <div class="dropdown">
+        <div class="user-chip" onclick="toggleMenu(event)">
+          <div class="avatar">${initials}</div>
+          <span class="name">${escapeHtml(currentUser.name || currentUser.email)}</span>
+          <span class="caret">▼</span>
+        </div>
+        <div class="menu" id="userMenu">
+          <div class="menu-head">
+            <div class="n">${escapeHtml(currentUser.name || 'Pengguna')}</div>
+            <div class="e">${escapeHtml(currentUser.email)}</div>
+          </div>
+          <button onclick="requireLogin('finance')">💰 Keuangan saya</button>
+          <button onclick="switchView('shop')">🛍️ Lanjut belanja</button>
+          <button class="danger" onclick="openLogoutModal()">🚪 Keluar</button>
+        </div>
+      </div>
+    `;
+  } else {
+    area.innerHTML = `
+      <button class="icon-btn" onclick="switchView('login')" title="Masuk / Daftar">👤</button>
+    `;
+  }
+};
+
+/* --- Toggle dropdown --- */
+const toggleMenu = (e) => {
+  e.stopPropagation();
+  const m = document.getElementById('userMenu');
+  if (m) m.classList.toggle('show');
+};
+
+document.addEventListener('click', () => {
+  const m = document.getElementById('userMenu');
+  if (m) m.classList.remove('show');
+});
+
+/* --- Switch tab login/register --- */
+const switchAuthTab = (mode) => {
+  authMode = mode;
+  document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
+  document.getElementById('fieldName').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('loginTitle').textContent = mode === 'register' ? 'Daftar akun NusaShop' : 'Masuk ke NusaShop';
+  document.getElementById('loginSub').textContent = mode === 'register'
+    ? 'Cukup email & password. Langsung bisa dipakai.'
+    : 'Belanja & kelola keuanganmu dalam satu akun.';
+  document.getElementById('btnSubmit').textContent = mode === 'register' ? 'Daftar' : 'Masuk';
+  clearAuthErrors();
+};
+
+const clearAuthErrors = () => {
+  ['fieldName','fieldEmail','fieldPass'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('invalid');
+  });
+};
+
+/* --- Validasi + submit --- */
+const submitAuth = () => {
+  clearAuthErrors();
+  const name = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+  const pass = document.getElementById('inputPass').value;
+
+  let ok = true;
+
+  if (authMode === 'register') {
+    if (name.length < 2) { document.getElementById('fieldName').classList.add('invalid'); ok = false; }
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('fieldEmail').classList.add('invalid'); ok = false;
+  }
+  if (pass.length < 4) {
+    document.getElementById('fieldPass').classList.add('invalid'); ok = false;
+  }
+
+  if (!ok) return;
+
+  // Simpan user (demo)
+  currentUser = {
+    name: authMode === 'register' ? name : (name || email.split('@')[0]),
+    email,
+    loggedInAt: new Date().toISOString()
+  };
+  localStorage.setItem('nusashop_user', JSON.stringify(currentUser));
+
+  renderUserArea();
+  toast(authMode === 'register' ? 'Akun dibuat! Selamat datang 🎉' : 'Berhasil masuk! 👋');
+  switchView('shop');
+};
+
+/* --- Logout --- */
+const openLogoutModal = () => {
+  document.getElementById('logoutModal').classList.add('show');
+};
+const closeModal = () => {
+  document.getElementById('logoutModal').classList.remove('show');
+};
+const doLogout = () => {
+  currentUser = null;
+  localStorage.removeItem('nusashop_user');
+  closeModal();
+  renderUserArea();
+  switchView('shop');
+  toast('Kamu sudah keluar', 'info');
+};
+
+/* --- Proteksi fitur (harus login) --- */
+const requireLogin = (targetView = 'finance') => {
+  if (currentUser) {
+    switchView(targetView);
+  } else {
+    toast('Silakan masuk dulu untuk akses keuangan', 'info');
+    switchView('login');
+  }
+};
+
+/* --- Override switchView supaya handle 'login' --- */
+const _originalSwitchView = switchView;
+switchView = (v) => {
+  if (v === 'login') {
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.icon-btn').forEach(x => x.classList.remove('active'));
+    document.getElementById('viewLogin').classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  _originalSwitchView(v);
+};
+
+/* --- Init --- */
+renderUserArea();
+
+</script>
+</body>
+</html>
